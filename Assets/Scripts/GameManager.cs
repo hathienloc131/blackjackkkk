@@ -30,25 +30,65 @@ public class GameManager : MonoBehaviour
 
     public GameObject holders;
     public bool isPlaying;
-	public int playerPoints;
+    public GameObject chipPrefabs;
+    public GameObject playerChip, betChip, dealerChip;
+
+    public int chipValue = 50;
+    private int maxColumnChip = 20, maxRowChip=5;
+    private float deltaChipY = 0.0038f, deltaChipX = 0.039f;
 	public int actualDealerPoints, displayDealerPoints;
     public int playerMoney;
+    public int dealerMoney;
+    private bool stacked = false;
 	public int currentBet;
     public int turn = 0;
     public bool clearBoard = false;
     public bool ending = false;
+    private bool isWin = true;
     // Start is called before the first frame update
 	public Deck playingDeck;
 
-    void _addPhysicComponent(GameObject gO)
+    private void _addPhysicComponent(GameObject gO)
     {
         // gO.AddComponent<Rigidbody>();
         // gO.AddComponent<BoxCollider>();
     }
+    private void clearChip(GameObject chipHolder)
+    {
+        for (int i = 0; i < chipHolder.transform.childCount; i++)
+        {
+            Destroy(chipHolder.transform.GetChild(i).gameObject);
+        }
+    }
+    private void generateChip(GameObject chipHolder, int currentMoney, int isBet = 0)
+    {
+        // clear
+        if (isBet == 0)
+            clearChip(chipHolder);
+
+        // new
+        int totalChip = currentMoney/chipValue;
+        Vector3 mainPosition = chipHolder.transform.position;
+        if (isBet == 1)
+        {
+            mainPosition = playerChip.transform.position;
+        }
+        else if (isBet == 2)
+        {
+            mainPosition = dealerChip.transform.position;
+        }
+        for (int i = 0; i< totalChip; i++)
+        {
+            int columnPlayerChip = i % maxColumnChip;
+            int rowPlayerChip = (i / maxColumnChip) % maxRowChip;
+            int widthPlayerChip = (i / maxColumnChip) / maxRowChip;
+
+            Vector3 position = new Vector3(mainPosition.x + rowPlayerChip*deltaChipX, mainPosition.y + columnPlayerChip*deltaChipY, mainPosition.z - widthPlayerChip * deltaChipX);
+            Instantiate(chipPrefabs, position, Quaternion.identity, chipHolder.transform);
+        }
+    }
     void Start()
     {
-        playerMoney = 5000;
-        currentBet = 50;
         clearBoard = false;
         Debug.Log("start");
         players = new List<Player>();
@@ -81,8 +121,7 @@ public class GameManager : MonoBehaviour
             players.Add(new Player(playerCardPosition5, cardHolder5, playerMoney));
         }
 
-        playerMoney = 1000;
-		currentBet = 50;
+
 
         Debug.Log("reset ..");
 
@@ -160,6 +199,8 @@ public class GameManager : MonoBehaviour
 			textWinner.text = "Player Busted\nDealer Win !!!";
 		else
 			textWinner.text = "Dealer Win !!!";
+        dealerMoney += currentBet * 2;
+        isWin = false;
 		endGame();
 	}
 	private void playerWin(bool winByBust) {
@@ -169,12 +210,14 @@ public class GameManager : MonoBehaviour
 			textWinner.text = "Dealer Busted\nPlayer Win !!!";
 		else
 			textWinner.text = "Player Win !!!";
-		playerMoney += currentBet * 2;
+		players[playerPosition].playerMoney += currentBet * 2;
+        isWin = true;
 		endGame();
 	}
 	private void gameDraw() {
 		textWinner.text = "Draw";
-		playerMoney += currentBet;
+		players[playerPosition].playerMoney += currentBet;
+        dealerMoney += currentBet;
 		endGame();
 	}
 	private void playerBusted() {
@@ -187,17 +230,28 @@ public class GameManager : MonoBehaviour
 	}
 
 	public void startGame() {
-		if (playerMoney > 0)
+		if (players[playerPosition].playerMoney > 0)
 		{
             clearBoard = false;
+            clearChip(betChip);
             clearCards();
 
-			playerMoney -= currentBet;
-			if (playerMoney < 0) {
-				playerMoney += currentBet;
-				betSlider.maxValue = playerMoney;
+			players[playerPosition].playerMoney -= currentBet;
+			if (players[playerPosition].playerMoney < 0) {
+				players[playerPosition].playerMoney += currentBet;
+				// betSlider.maxValue = players[playerPosition].playerMoney;
 				return;
 			}
+            dealerMoney -= currentBet;
+            generateChip(playerChip, players[playerPosition].playerMoney);
+            generateChip(dealerChip, dealerMoney);
+
+            generateChip(betChip, currentBet, 1);
+            generateChip(betChip, currentBet, 2);
+            stacked = false;
+            // generateChip(betChip, currentBet, true);
+
+
 
 			isPlaying = true;
 
@@ -238,7 +292,8 @@ public class GameManager : MonoBehaviour
 
 	private void playerBlackjack() {
 		textWinner.text = "Blackjack !!!";
-		playerMoney += currentBet * 2;
+		players[playerPosition].playerMoney += currentBet * 2;
+        isWin = true;
 		endGame();
 	}
 
@@ -345,6 +400,39 @@ public class GameManager : MonoBehaviour
                 transform.position = Vector3.MoveTowards(transform.position, cardPosition.position, 1 * Time.deltaTime);
             }
         }
+
+        for (int j =  0; j < betChip.transform.childCount ; j++)
+        {
+            Transform transform = betChip.transform.GetChild(j).gameObject.transform;
+            Transform chipPosition;
+            if (clearBoard)
+            {
+                if (isWin)
+                {
+                    chipPosition = playerChip.transform;
+                }
+                else
+                {
+                    chipPosition = dealerChip.transform;
+                }
+            }
+            else
+            {
+                chipPosition = betChip.transform;
+            }
+            if (Vector3.Distance(transform.position, chipPosition.position) > 0.001f)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, new Vector3(chipPosition.position.x, transform.position.y, chipPosition.position.z), 1 * Time.deltaTime);
+            }
+            else
+            {
+                if (!stacked)
+                {
+                    generateChip(betChip, currentBet*2);
+                    stacked = true;
+                }
+            }
+        }
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
@@ -407,6 +495,13 @@ public class GameManager : MonoBehaviour
     private void resetGame() {
 		isPlaying = false;
 		ending = false;
+        generateChip(playerChip, players[playerPosition].playerMoney);
+        generateChip(dealerChip, dealerMoney);
+
+
+
+        // generateChip(dealerChip, dealerMoney);
+
 		// reset points
 		for (int i = 0; i < numPlayer; i++)
         {
