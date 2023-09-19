@@ -1,7 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace CityPeople
@@ -24,24 +26,16 @@ namespace CityPeople
                 // Play the animation
                 animator.Play("locom_m_basicWalk_30f");
             }
-            else if (Input.GetKeyDown(KeyCode.Return)){
+            else if (Input.GetKeyDown(KeyCode.Return))
+            {
                 if (GlobalVariable.IS_CHANGE_SCENCE_PLAY_CARD)
                 {
-                    text.text = "CHUYEN MAN";
+                    SceneManager.LoadScene("SampleScene");
                 }
             }
             else
             {
                 animator.Play("idle_m_1_200f");
-            }
-        }
-
-        void OnCollisionEnter(Collision collision)
-        {
-            Debug.Log(collision.gameObject.name);
-            if (collision.gameObject.name == "ObjectName")
-            {
-                Debug.Log("Đối tượng đã va chạm với ObjectName");
             }
         }
 
