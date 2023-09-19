@@ -1,5 +1,6 @@
 import numpy as np
 import gym
+import copy
 from collections import defaultdict
 import sys
 import json
@@ -13,7 +14,7 @@ def remap_keys(mapping):
 
 if __name__ == "__main__":
     env = gym.make('Blackjack-v1')
-    EPS = 0.005
+    EPS = 0.05
     GAMMA = 1.0
 
     Q = {}
@@ -37,12 +38,12 @@ if __name__ == "__main__":
 
     policy = {}
     for state in stateSpace:
-        policy[state] = np.random.choice(actionSpace)
+        policy[state] = np.random.choice([0])
 
 
     start = timeit.default_timer()
 
-    numEpisodes = 100000000
+    numEpisodes = 5000000
     for i in range(numEpisodes):
         stateActionReturns = []
         memory = []
@@ -130,12 +131,25 @@ if __name__ == "__main__":
     table = []
     for total in agentSumSpace:
         row = []
+        print(total)
         for card in dealerShowCardSpace:
             state = (total, card, True)
             row.append(policy[state])
+        print(len(table))
+        table.append(copy.deepcopy(row))
+    
+    plt.imshow( table , cmap = 'magma' )
+  
+    # Adding details to the plot
+    plt.title( "2-D Heat Map" )
+    plt.xlabel('x-axis')
+    plt.ylabel('y-axis')
 
-        table.append(row)
+    # Adding a color bar to the plot
+    plt.colorbar()
 
+    # Displaying the plot
+    plt.show()
     with open("mc_policy.json", "w") as f:
         json.dump(remap_keys(policy), f)
         f.close()
