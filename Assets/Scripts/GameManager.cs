@@ -12,13 +12,13 @@ public class GameManager : MonoBehaviour
 	// [SerializeField]
 	// public Button primaryBtn, secondaryBtn, resetBalanceBtn;
     [SerializeField]
-    public GameObject primaryBtn_, secondaryBtn_;
+    public GameObject primaryBtn_, secondaryBtn_, BaoButton;
     [SerializeField]
 	public Slider betSlider, numSlider;
     [SerializeField]
     public GameObject cardHolder1, cardHolder2, cardHolder3, cardHolder4, cardHolder5, dealerCardHolder, mainDeck;
     [SerializeField]
-    public TMP_Text textPlayerPoints, textDealerPoints, textWinner;
+    public TMP_Text textPlayerPoints, textDealerPoints, textWinner, baoText;
 
 
     public int numPlayer = 4;
@@ -459,26 +459,39 @@ public class GameManager : MonoBehaviour
                     } 
                     else if (ending)
                     {
-            SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Shuffe);
+                        SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Shuffe);
 
                         clearBoard = true;
                         resetGame();
                     } else {
-            SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Shuffe);
+                        SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Shuffe);
 
                         startGame();
                     }
+                    baoText.text = "";
+
                 }
                 if ( hit.transform.gameObject.name == "StandButton")
                 {
-                SfxManager.sfxInstance.Audio.Stop();
+                    SfxManager.sfxInstance.Audio.Stop();
 
-                SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Click);
+                    SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Click);
 
                     hit.transform.gameObject.transform.localScale = new Vector3(0.1f,0.03f,0.05f);
                     playerEndTurn();
                     turn += 1;
+                    baoText.text = "";
                 }
+
+                if ( hit.transform.gameObject.name == "BaoButton")
+                {
+                    SfxManager.sfxInstance.Audio.Stop();
+
+                    SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Click);
+
+                    baoMethod();
+                }
+
             }
             // Debug.Log("clickedd object");
         } 
@@ -490,6 +503,10 @@ public class GameManager : MonoBehaviour
 
     }
     
+    private void baoMethod()
+    {
+        baoText.text = "ALO ALO";
+    }
 
 
     private void resetGame() {
