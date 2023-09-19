@@ -21,8 +21,8 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     public TMP_Text textPlayerPoints, textDealerPoints, textWinner, baoText;
 
-
     public int numPlayer = 4;
+
 
     public List<Player> players;
 	public List<Card> dealerCards = new List<Card>(); 
@@ -61,6 +61,7 @@ public class GameManager : MonoBehaviour
             Destroy(chipHolder.transform.GetChild(i).gameObject);
         }
     }
+
     private void generateChip(GameObject chipHolder, int currentMoney, int isBet = 0)
     {
         // clear
@@ -436,6 +437,7 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
