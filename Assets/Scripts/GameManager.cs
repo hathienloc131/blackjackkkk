@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour
     public int playerMoney;
 	public int currentBet;
     public int turn = 0;
+    public bool clearBoard = false;
     public bool ending = false;
     // Start is called before the first frame update
 	public Deck playingDeck;
@@ -46,6 +47,7 @@ public class GameManager : MonoBehaviour
     {
         playerMoney = 5000;
         currentBet = 50;
+        clearBoard = false;
         Debug.Log("start");
         players = new List<Player>();
         //Add collision and rigidbody for CardPrefab
@@ -135,6 +137,8 @@ public class GameManager : MonoBehaviour
 	}
 	public void endGame() {
 		primaryBtn_.gameObject.SetActive(true);
+		primaryBtn_.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(0.63f, 0.42f, 0.1f, 1.0f));
+
 		secondaryBtn_.gameObject.SetActive(false);
 		// betSlider.gameObject.SetActive(false);
 		// textPlaceYourBet.text = "";
@@ -179,6 +183,8 @@ public class GameManager : MonoBehaviour
 	public void startGame() {
 		if (playerMoney > 0)
 		{
+            clearBoard = false;
+            clearCards();
 			playerMoney -= currentBet;
 			if (playerMoney < 0) {
 				playerMoney += currentBet;
@@ -189,6 +195,7 @@ public class GameManager : MonoBehaviour
 			isPlaying = true;
 
 			// Update UI accordingly
+            primaryBtn_.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(0.14f, 0.11f, 0.11f, 1.0f));
 			// primaryBtn.GetComponentInChildren<Text>().text = "HIT";
 			secondaryBtn_.gameObject.SetActive(true);
 
@@ -298,22 +305,34 @@ public class GameManager : MonoBehaviour
         {
             for (int j = 0; j < players[i].playerCardHolder.transform.childCount; j++)
             {
-                Transform cardPosition = players[i].playerCardPosition[j].transform;
                 Transform transform = players[i].playerCardHolder.transform.GetChild(j).gameObject.transform;
-                if (Vector3.Distance(transform.position, cardPosition.position) > 0.001f)
+                Transform cardPosition;
+                if (clearBoard)
                 {
-                    transform.position = Vector3.MoveTowards(transform.position, cardPosition.position, 1 * Time.deltaTime);
+                    cardPosition = mainDeck.transform;
                 }
                 else
                 {
-
+                    cardPosition = players[i].playerCardPosition[j].transform;
+                }
+                if (Vector3.Distance(transform.position, cardPosition.position) > 0.001f)
+                {
+                    transform.position = Vector3.MoveTowards(transform.position, cardPosition.position, 1 * Time.deltaTime);
                 }
             }
         }
         for (int j = 0; j < dealerCardHolder.transform.childCount; j++)
         {
-            Transform cardPosition = dealerCardPosition[j].transform;
             Transform transform = dealerCardHolder.transform.GetChild(j).gameObject.transform;
+            Transform cardPosition;
+            if (clearBoard)
+            {
+                cardPosition = mainDeck.transform;
+            }
+            else
+            {
+                cardPosition = dealerCardPosition[j].transform;
+            }
             if (Vector3.Distance(transform.position, cardPosition.position) > 0.001f)
             {
                 transform.position = Vector3.MoveTowards(transform.position, cardPosition.position, 1 * Time.deltaTime);
@@ -341,6 +360,7 @@ public class GameManager : MonoBehaviour
                     } 
                     else if (ending)
                     {
+                        clearBoard = true;
                         resetGame();
                     } else {
                         startGame();
@@ -381,14 +401,14 @@ public class GameManager : MonoBehaviour
 		dealerCards = new List<Card>();
 
         primaryBtn_.gameObject.SetActive(true);
-		// primaryBtn.GetComponentInChildren<Text>().text = "DEAL";
+		primaryBtn_.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(0.56f, 0.11f, 0.11f, 1.0f));
 		secondaryBtn_.gameObject.SetActive(false);
 	    textPlayerPoints.text = "";
 		textDealerPoints.text = "";
 		textWinner.text = "";
        
 		// clear cards on table
-		clearCards();
+		// clearCards();
         Debug.Log("reset ok");
 	}
 
