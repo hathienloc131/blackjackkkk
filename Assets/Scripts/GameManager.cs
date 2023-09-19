@@ -19,6 +19,8 @@ public class GameManager : MonoBehaviour
     public GameObject cardHolder1, cardHolder2, cardHolder3, cardHolder4, cardHolder5, dealerCardHolder, mainDeck;
     [SerializeField]
     public TMP_Text textPlayerPoints, textDealerPoints, textWinner;
+
+
     public int numPlayer = 4;
 
     public List<Player> players;
@@ -152,6 +154,8 @@ public class GameManager : MonoBehaviour
         ending = true;
 	}
 	private void dealerWin(bool winByBust) {
+        SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Losing);
+
 		if (winByBust)
 			textWinner.text = "Player Busted\nDealer Win !!!";
 		else
@@ -159,6 +163,8 @@ public class GameManager : MonoBehaviour
 		endGame();
 	}
 	private void playerWin(bool winByBust) {
+        SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Winning);
+        
 		if (winByBust)
 			textWinner.text = "Dealer Busted\nPlayer Win !!!";
 		else
@@ -185,6 +191,7 @@ public class GameManager : MonoBehaviour
 		{
             clearBoard = false;
             clearCards();
+
 			playerMoney -= currentBet;
 			if (playerMoney < 0) {
 				playerMoney += currentBet;
@@ -347,6 +354,10 @@ public class GameManager : MonoBehaviour
             {
                 if ( hit.transform.gameObject.name == "HitButton")
                 {
+                SfxManager.sfxInstance.Audio.Stop();
+
+                SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Click);
+
                     hit.transform.gameObject.transform.localScale = new Vector3(0.1f,0.03f,0.05f);
                     if (isPlaying) {
                         if (turn % numPlayer == playerPosition)
@@ -360,14 +371,22 @@ public class GameManager : MonoBehaviour
                     } 
                     else if (ending)
                     {
+            SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Shuffe);
+
                         clearBoard = true;
                         resetGame();
                     } else {
+            SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Shuffe);
+
                         startGame();
                     }
                 }
                 if ( hit.transform.gameObject.name == "StandButton")
                 {
+                SfxManager.sfxInstance.Audio.Stop();
+
+                SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Click);
+
                     hit.transform.gameObject.transform.localScale = new Vector3(0.1f,0.03f,0.05f);
                     playerEndTurn();
                     turn += 1;
@@ -410,6 +429,7 @@ public class GameManager : MonoBehaviour
 		// clear cards on table
 		// clearCards();
         Debug.Log("reset ok");
+
 	}
 
 	private void clearCards() {
