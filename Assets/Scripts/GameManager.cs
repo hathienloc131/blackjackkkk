@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,7 +13,7 @@ public class GameManager : MonoBehaviour
 	// [SerializeField]
 	// public Button primaryBtn, secondaryBtn, resetBalanceBtn;
     [SerializeField]
-    public GameObject primaryBtn_, secondaryBtn_, BaoButton;
+    public GameObject primaryBtn_, secondaryBtn_, BaoButton, exitButton;
     [SerializeField]
 	public Slider betSlider, numSlider;
     [SerializeField]
@@ -178,6 +179,7 @@ public class GameManager : MonoBehaviour
 	}
 	public void endGame() {
 		primaryBtn_.gameObject.SetActive(true);
+        primaryBtn_.GetComponentInChildren<TMP_Text>().text = "Reset";
 		primaryBtn_.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(0.63f, 0.42f, 0.1f, 1.0f));
 
 		secondaryBtn_.gameObject.SetActive(false);
@@ -254,6 +256,7 @@ public class GameManager : MonoBehaviour
 
 
 			isPlaying = true;
+            primaryBtn_.GetComponentInChildren<TMP_Text>().text = "Hit";
 
 			// Update UI accordingly
             primaryBtn_.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(0.14f, 0.11f, 0.11f, 1.0f));
@@ -491,6 +494,15 @@ public class GameManager : MonoBehaviour
 
                     baoMethod();
                 }
+                if ( hit.transform.gameObject.name == "Exit")
+                {
+                    SfxManager.sfxInstance.Audio.Stop();
+
+                    SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Click);
+
+                    SceneManager.LoadScene("Room");
+
+                }
 
             }
             // Debug.Log("clickedd object");
@@ -532,6 +544,8 @@ public class GameManager : MonoBehaviour
 		dealerCards = new List<Card>();
 
         primaryBtn_.gameObject.SetActive(true);
+        primaryBtn_.GetComponentInChildren<TMP_Text>().text = "Start";
+
 		primaryBtn_.GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(0.56f, 0.11f, 0.11f, 1.0f));
 		secondaryBtn_.gameObject.SetActive(false);
 	    textPlayerPoints.text = "";
