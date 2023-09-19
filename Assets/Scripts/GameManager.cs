@@ -362,7 +362,7 @@ public class GameManager : MonoBehaviour
                     if (isPlaying) {
                         if (turn % numPlayer == playerPosition)
                         {
-                            if (players[playerPosition].playerCardPointer < 5)
+                            if (players[playerPosition].playerCardPointer < 7)
                             {
                                 playerDrawCard(playerPosition);
                             }
