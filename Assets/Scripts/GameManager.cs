@@ -8,31 +8,34 @@ public class GameManager : MonoBehaviour
 {
 
     [SerializeField]
-	private GameObject[] cardPrefabs, playerCardPosition1, playerCardPosition2, playerCardPosition3, playerCardPosition4, playerCardPosition5, dealerCardPosition;
-	[SerializeField]
-	private Button primaryBtn, secondaryBtn, resetBalanceBtn;
+	public GameObject[] cardPrefabs, playerCardPosition1, playerCardPosition2, playerCardPosition3, playerCardPosition4, playerCardPosition5, dealerCardPosition;
+	// [SerializeField]
+	// public Button primaryBtn, secondaryBtn, resetBalanceBtn;
     [SerializeField]
-	private Slider betSlider, numSlider;
+    public GameObject primaryBtn_, secondaryBtn_;
     [SerializeField]
-    private GameObject cardHolder1, cardHolder2, cardHolder3, cardHolder4, cardHolder5, dealerCardHolder, mainDeck;
+	public Slider betSlider, numSlider;
     [SerializeField]
-    private TMP_Text textPlayerPoints, textDealerPoints, textWinner;
+    public GameObject cardHolder1, cardHolder2, cardHolder3, cardHolder4, cardHolder5, dealerCardHolder, mainDeck;
+    [SerializeField]
+    public TMP_Text textPlayerPoints, textDealerPoints, textWinner;
     public int numPlayer = 4;
 
-    private List<Player> players;
-	private List<Card> dealerCards = new List<Card>(); 
-	private int dealerCardPointer;
+    public List<Player> players;
+	public List<Card> dealerCards = new List<Card>(); 
+	public int dealerCardPointer;
     public int playerPosition = 0;
 
-    private GameObject holders;
-    private bool isPlaying;
-	private int playerPoints;
-	private int actualDealerPoints, displayDealerPoints;
-    private int playerMoney;
-	private int currentBet;
-    private int turn = 0;
+    public GameObject holders;
+    public bool isPlaying;
+	public int playerPoints;
+	public int actualDealerPoints, displayDealerPoints;
+    public int playerMoney;
+	public int currentBet;
+    public int turn = 0;
+    public bool ending = false;
     // Start is called before the first frame update
-	private Deck playingDeck;
+	public Deck playingDeck;
 
     void _addPhysicComponent(GameObject gO)
     {
@@ -81,33 +84,19 @@ public class GameManager : MonoBehaviour
 
         resetGame();
 
-        
-		primaryBtn.onClick.AddListener(delegate {
-			if (isPlaying) {
-                if (turn % numPlayer == playerPosition)
-                {
-                    if (players[playerPosition].playerCardPointer < 5)
-                    {
-                        playerDrawCard(playerPosition);
-                    }
-                    // turn += 1;
-                }
-			} else {
-				startGame();
-			}
-		});
-
-		secondaryBtn.onClick.AddListener(delegate {
-            playerEndTurn();
-			turn += 1;
-		});
     }
 
+    
 
+    IEnumerator SleepCoroutine(int second)
+    {
+        yield return new WaitForSeconds(second);
+    }
 	private void revealDealersDownFacingCard() {
 		// reveal the dealer's down-facing card
 		Destroy(dealerCardHolder.transform.GetChild(0).gameObject);
 		Instantiate(dealerCards[0].Prefab, dealerCardPosition[0].transform.position, Quaternion.identity, dealerCardHolder.transform);
+        StartCoroutine(SleepCoroutine(5));
 	}
 
 	private void playerEndTurn() {
@@ -116,6 +105,7 @@ public class GameManager : MonoBehaviour
 		// dealer start drawing
 		while (actualDealerPoints < 17 && actualDealerPoints < playerPoint) {
 			dealerDrawCard();
+            StartCoroutine(SleepCoroutine(5));
 		}
 		updateDealerPoints(false);
 		if (actualDealerPoints > 21)
@@ -144,8 +134,8 @@ public class GameManager : MonoBehaviour
         }
 	}
 	public void endGame() {
-		primaryBtn.gameObject.SetActive(false);
-		secondaryBtn.gameObject.SetActive(false);
+		primaryBtn_.gameObject.SetActive(true);
+		secondaryBtn_.gameObject.SetActive(false);
 		// betSlider.gameObject.SetActive(false);
 		// textPlaceYourBet.text = "";
 		// textSelectingBet.text = "";
@@ -154,6 +144,8 @@ public class GameManager : MonoBehaviour
 		// resetImgBtn.GetComponent<Button>().onClick.AddListener(delegate {
 		// 	resetGame();
 		// });
+        isPlaying = false;
+        ending = true;
 	}
 	private void dealerWin(bool winByBust) {
 		if (winByBust)
@@ -198,7 +190,7 @@ public class GameManager : MonoBehaviour
 
 			// Update UI accordingly
 			// primaryBtn.GetComponentInChildren<Text>().text = "HIT";
-			secondaryBtn.gameObject.SetActive(true);
+			secondaryBtn_.gameObject.SetActive(true);
 
 			// assign the playing deck
 			playingDeck = new Deck(cardPrefabs);
@@ -244,7 +236,7 @@ public class GameManager : MonoBehaviour
         // Quaternion
         if (isPlayer)
         {
-			angle = Quaternion.Euler(new Vector3(0, transform.eulerAngles.y,  transform.eulerAngles.z));
+			angle = Quaternion.Euler(new Vector3(0, transform.eulerAngles.y ,  transform.eulerAngles.z));
 		    textPlayerPoints.text = players[playerPosition].playerPoints.ToString();
         }
         else
@@ -312,6 +304,10 @@ public class GameManager : MonoBehaviour
                 {
                     transform.position = Vector3.MoveTowards(transform.position, cardPosition.position, 1 * Time.deltaTime);
                 }
+                else
+                {
+
+                }
             }
         }
         for (int j = 0; j < dealerCardHolder.transform.childCount; j++)
@@ -323,12 +319,55 @@ public class GameManager : MonoBehaviour
                 transform.position = Vector3.MoveTowards(transform.position, cardPosition.position, 1 * Time.deltaTime);
             }
         }
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
+            RaycastHit hit;
+            
+            if( Physics.Raycast( ray, out hit, 100 ) )
+            {
+                if ( hit.transform.gameObject.name == "HitButton")
+                {
+                    hit.transform.gameObject.transform.localScale = new Vector3(0.1f,0.03f,0.05f);
+                    if (isPlaying) {
+                        if (turn % numPlayer == playerPosition)
+                        {
+                            if (players[playerPosition].playerCardPointer < 5)
+                            {
+                                playerDrawCard(playerPosition);
+                            }
+                            // turn += 1;
+                        }
+                    } 
+                    else if (ending)
+                    {
+                        resetGame();
+                    } else {
+                        startGame();
+                    }
+                }
+                if ( hit.transform.gameObject.name == "StandButton")
+                {
+                    hit.transform.gameObject.transform.localScale = new Vector3(0.1f,0.03f,0.05f);
+                    playerEndTurn();
+                    turn += 1;
+                }
+            }
+            // Debug.Log("clickedd object");
+        } 
+        else{
+            primaryBtn_.transform.localScale = new  Vector3(0.1f,0.05f,0.05f);
+            secondaryBtn_.transform.localScale = new  Vector3(0.1f,0.05f,0.05f);
+        }
+
+
     }
+    
 
 
     private void resetGame() {
 		isPlaying = false;
-		
+		ending = false;
 		// reset points
 		for (int i = 0; i < numPlayer; i++)
         {
@@ -341,9 +380,9 @@ public class GameManager : MonoBehaviour
 		playingDeck = new Deck(cardPrefabs);
 		dealerCards = new List<Card>();
 
-        primaryBtn.gameObject.SetActive(true);
+        primaryBtn_.gameObject.SetActive(true);
 		// primaryBtn.GetComponentInChildren<Text>().text = "DEAL";
-		secondaryBtn.gameObject.SetActive(false);
+		secondaryBtn_.gameObject.SetActive(false);
 	    textPlayerPoints.text = "";
 		textDealerPoints.text = "";
 		textWinner.text = "";
